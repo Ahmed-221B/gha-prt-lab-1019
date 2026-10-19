@@ -1,0 +1,25 @@
+name: Lab Integration Test
+# Mirrors the property under test: pull_request_target + checkout of the PR head
+# + repo code execution inside a job that can mint an OIDC token.
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  integ-test:
+    runs-on: ubuntu-latest
+    environment: lab-integ
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Build (runs repository code from the PR)
+        run: |
+          npm ci
+          npm run build
